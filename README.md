@@ -39,9 +39,9 @@ A recipe management API built with modern Python technologies.
 ## Test Data
 
 ### Registered Users
-```json
+
     user: admin; password: admin123; role: ADMIN; UUID: 123e4567-e89b-12d3-a456-426614174000
-```
+
 ```json
         {
             "email": "admin",
@@ -49,7 +49,6 @@ A recipe management API built with modern Python technologies.
             "role": "ADMIN"
         }
 ```
-```json
     user: user1; password: admin123; role: USER; UUID: 123e4567-e89b-12d3-a456-426614174001
 ```json
         {
@@ -58,7 +57,6 @@ A recipe management API built with modern Python technologies.
             "role": "USER"
         }
 ``` 
-```json
     user: user2; password: admin123; role: USER; UUID: 123e4567-e89b-12d3-a456-426614174002
 ```json
         {
