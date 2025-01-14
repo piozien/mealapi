@@ -105,8 +105,8 @@ A recipe management API built with modern Python technologies.
 ```
 
 ### Sample Comment
-```json
     With rating:
+```json
     {
         "content": "Good",
         "recipe_id": 4,
@@ -115,8 +115,8 @@ A recipe management API built with modern Python technologies.
         }
     }
 ```
-```json
     Without rating:
+```json
     {
         "content": "Good",
         "recipe_id": 4,
