@@ -1,0 +1,145 @@
+{
+  "email": "admin",
+  "password": "admin123",
+  "role": "ADMIN"
+}
+123e4567-e89b-12d3-a456-426614174000
+{
+  "token_type": "Bearer",
+  "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAiLCJleHAiOjE3MzU4Mzg1MjksInR5cGUiOiJjb25maXJtYXRpb24iLCJyb2xlIjoiQURNSU4ifQ.StBbbhqs_L8sYGVc-9OlCaPLDmqCGGT0CnRYm8p3SVQ",
+  "expires": "2025-01-02T17:22:09.875880Z"
+}
+
+
+{
+  "email": "user1",
+  "password": "admin123",
+  "role": "USER"
+}
+123e4567-e89b-12d3-a456-426614174001
+{
+  "token_type": "Bearer",
+  "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDEiLCJleHAiOjE3MzU4NDA4NzUsInR5cGUiOiJjb25maXJtYXRpb24iLCJyb2xlIjoiVVNFUiJ9.feCUQRQIKRrkRsGTy1c2lLNMMWX1RFblgd8ob5J9FXI",
+  "expires": "2025-01-02T18:01:15.959336Z"
+}
+
+
+
+{
+  "email": "user2",
+  "password": "admin123",
+  "role": "USER"
+}
+
+123e4567-e89b-12d3-a456-426614174002
+
+{
+  "token_type": "Bearer",
+  "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDIiLCJleHAiOjE3MzU4MzgzNjMsInR5cGUiOiJjb25maXJtYXRpb24iLCJyb2xlIjoiVVNFUiJ9.Ek5XlnUDyryTks1JBZmLld_ygibeApRTwVTs44Zu2TA",
+  "expires": "2025-01-02T17:19:23.179571Z"
+}
+
+
+
+{
+    "id": 1,
+    "name": "Spaghetti Carbonara",
+    "description": "Klasyczne włoskie danie z makaronu z sosem na bazie jajek i pancetty",
+    "instructions": "Przygotuj składniki i ugotuj makaron al dente. W międzczasie przygotuj sos...",
+    "category": "Dania główne",
+    "ingredients": [
+      "400g:makaron spaghetti",
+      "200g:pancetta",
+      "4:jajka",
+      "100g:parmezan",
+      "do smaku:sól",
+      "do smaku:pieprz"
+    ],
+    "preparation_time": 30,
+    "servings": 4,
+    "difficulty": "średni",
+    "average_rating": 4.5,
+    "author": "123e4567-e89b-12d3-a456-426614174001",
+    "comments": [
+      {
+        "id": 1,
+        "author": "123e4567-e89b-12d3-a456-426614174001",
+        "recipe_id": 1,
+        "content": "Świetny przepis! Wyszło dokładnie jak w restauracji.",
+        "rating_id": 1,
+        "created_at": "2023-12-14T15:00:00Z"
+      },
+      {
+        "id": 2,
+        "author": "123e4567-e89b-12d3-a456-426614174002",
+        "recipe_id": 1,
+        "content": "Bardzo dobre, ale dodałbym więcej pieprzu.",
+        "rating_id": 2,
+        "created_at": "2023-12-14T15:30:00Z"
+      }
+    ],
+    "ratings": [
+      {
+        "value": 5,
+        "recipe_id": 1,
+        "author": "123e4567-e89b-12d3-a456-426614174001",
+        "id": 1,
+        "created_at": "2023-12-14T15:00:00Z"
+      },
+      {
+        "value": 4,
+        "recipe_id": 1,
+        "author": "123e4567-e89b-12d3-a456-426614174002",
+        "id": 2,
+        "created_at": "2023-12-14T15:30:00Z"
+      }
+    ],
+    "tags": [
+      "włoskie",
+      "makaron",
+      "szybkie"
+    ]
+  },
+
+
+
+
+
+
+{
+  "name": "Pancakes z syropem klonowym",
+  "description": "Prosty i szybki przepis na pyszne amerykańskie naleśniki z dodatkiem syropu klonowego.",
+  "instructions": "1. W dużej misce wymieszaj mąkę, cukier, proszek do pieczenia i sól.\n2. W drugiej misce roztrzep jajka z mlekiem i roztopionym masłem.\n3. Połącz mokre składniki z suchymi, mieszając do uzyskania gładkiego ciasta.\n4. Rozgrzej patelnię z odrobiną oleju na średnim ogniu.\n5. Wylej porcje ciasta na patelnię i smaż z obu stron, aż będą złote.\n6. Podawaj z syropem klonowym i ulubionymi dodatkami.",
+  "category": "śniadanie",
+  "ingredients": [
+    "200g:mąka pszenna",
+    "2 łyżki:cukier",
+    "1 łyżeczka:proszek do pieczenia",
+    "szczypta:sól",
+    "2:sztuki jajka",
+    "250ml:mleko",
+    "50g:masło roztopione",
+    "do smażenia:olej",
+    "do podania:syrop klonowy"
+  ],
+  "preparation_time": 20,
+  "servings": 4,
+  "difficulty": "łatwy",
+  "steps": [
+    "W dużej misce wymieszaj mąkę, cukier, proszek do pieczenia i sól.",
+    "W drugiej misce roztrzep jajka z mlekiem i roztopionym masłem.",
+    "Połącz mokre składniki z suchymi, mieszając do uzyskania gładkiego ciasta.",
+    "Rozgrzej patelnię z odrobiną oleju na średnim ogniu.",
+    "Wylej porcje ciasta na patelnię i smaż z obu stron, aż będą złote.",
+    "Podawaj z syropem klonowym i ulubionymi dodatkami."
+  ],
+  "tags": [
+    "śniadanie",
+    "naleśniki",
+    "szybkie"
+  ]
+}
+
+
+
+01941820-19d2-7bf3-bd92-7e7621acc0e3

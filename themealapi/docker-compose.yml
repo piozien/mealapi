@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mealapi:/mealapi
+    command: ["uvicorn", "mealapi.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      - DB_HOST=db
+      - DB_NAME=app
+      - DB_USER=postgres
+      - DB_PASSWORD=pass
+    depends_on:
+      - db
+    networks:
+      - backend
+    container_name: app
+
+  db:
+    image: postgres:17.0-alpine3.20
+    environment:
+      - POSTGRES_DB=app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./02_data.sql:/docker-entrypoint-initdb.d/02_data.sql
+  
+    networks:
+      - backend
+    container_name: db
+
+networks:
+  backend:
