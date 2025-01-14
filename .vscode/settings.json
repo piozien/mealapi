@@ -12,6 +12,13 @@
         }
     ],
     "cSpell.words": [
-        "ondelete"
+        "aiohttp",
+        "asyncpg",
+        "dateutil",
+        "dotenv",
+        "fastapi",
+        "numpy",
+        "ondelete",
+        "passlib"
     ]
 }
