@@ -40,7 +40,7 @@ A recipe management API built with modern Python technologies.
 
 ### Registered Users
 
-    user: admin; password: admin123; role: ADMIN; UUID: 123e4567-e89b-12d3-a456-426614174000
+    email: admin; password: admin123; role: ADMIN; UUID: 123e4567-e89b-12d3-a456-426614174000
 
 ```json
         {
@@ -49,7 +49,7 @@ A recipe management API built with modern Python technologies.
             "role": "ADMIN"
         }
 ```
-    user: user1; password: admin123; role: USER; UUID: 123e4567-e89b-12d3-a456-426614174001
+    email: user1; password: admin123; role: USER; UUID: 123e4567-e89b-12d3-a456-426614174001
 ```json
         {
             "email": "user1",
@@ -57,7 +57,7 @@ A recipe management API built with modern Python technologies.
             "role": "USER"
         }
 ``` 
-    user: user2; password: admin123; role: USER; UUID: 123e4567-e89b-12d3-a456-426614174002
+    email: user2; password: admin123; role: USER; UUID: 123e4567-e89b-12d3-a456-426614174002
 ```json
         {
             "email": "user2",
