@@ -1,57 +1,51 @@
-"""Module containing comment domain models.
-
-This module defines the data models for handling comments in the recipe application.
-Comments can be associated with recipes and optionally with ratings.
-"""
-
-from datetime import datetime
+"""Module containing comments domain model"""
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+from mealapi.core.domain.rating import Rating, RatingIn
+
+
+class CommentBase(BaseModel):
+    """Base model for comment with common fields"""
+    content: str = Field(..., description="Comment content", min_length=1, max_length=500)
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CommentIn(BaseModel):
-    """Model representing comment input attributes for updating an existing comment.
-    
-    Attributes:
-        content (str): The text content of the comment
-        rating (Optional[int]): Optional rating value (1-5) associated with the comment
-    """
-    content: str
-    rating: Optional[int] = None
+    """Model representing comment input attributes for creation and updating"""
+    content: str = Field(..., description="Comment content", min_length=1, max_length=500)
+    recipe_id: Optional[int] = Field(None, description="ID of the recipe", gt=0)
+    rating: Optional[RatingIn] = Field(
+        default=None,
+        description="Optional rating for the comment"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class CommentCreate(BaseModel):
-    """Model representing comment input attributes for creating a new comment.
-    
-    Attributes:
-        recipe_id (int): ID of the recipe this comment is associated with
-        content (str): The text content of the comment
-        rating (Optional[int]): Optional rating value (1-5) for the recipe
-    """
-    recipe_id: int
-    content: str
-    rating: Optional[int] = None
+class CommentCreate(CommentBase):
+    """Model representing comment input attributes for creation"""
+    recipe_id: int = Field(..., description="ID of the recipe", examples=[1])
+    rating: Optional[RatingIn] = Field(default=None)
 
-    model_config = ConfigDict(from_attributes=True)
+    @classmethod
+    def validate_recipe_id(cls, v: int) -> int:
+        """Validate that recipe_id is greater than 0"""
+        if v <= 0:
+            raise ValueError("Recipe ID must be greater than 0")
+        return v
 
 
-class Comment(CommentCreate):
-    """Model representing comment attributes in the database.
-    
-    Extends CommentCreate to include additional fields for database storage.
-    
-    Attributes:
-        author (UUID): ID of the user who created the comment
-        created_at (datetime): Timestamp when the comment was created
-        rating_id (Optional[int]): ID of the associated rating if one exists
-        id (Optional[int]): Unique identifier of the comment
-    """
+class Comment(CommentBase):
+    """Model representing comment attributes in the database"""
+    id: Optional[int] = Field(default=None)
     author: UUID
-    created_at: datetime
-    rating_id: Optional[int] = None
-    id: Optional[int] = None
+    recipe_id: int
+    rating: Optional[Rating] = Field(default=None)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     model_config = ConfigDict(from_attributes=True)

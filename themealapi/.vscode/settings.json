@@ -10,5 +10,8 @@
             "username": "postgres",
             "password": "pass"
         }
+    ],
+    "cSpell.words": [
+        "ondelete"
     ]
 }

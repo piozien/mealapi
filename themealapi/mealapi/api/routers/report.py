@@ -1,271 +1,313 @@
 """A module containing report endpoints."""
 
-from typing import Iterable, Any
-
-from dependency_injector.wiring import inject, Provide
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import jwt
+from typing import Any, List, Optional
 from uuid import UUID
 
-from mealapi.infrastructure.utils.consts import SECRET_KEY, ALGORITHM
+from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import jwt
+
 from mealapi.container import Container
-from mealapi.core.domain.report import ReportIn, ReportStatus
+from mealapi.core.domain.report import ReportIn, ReportReason, ReportStatus
 from mealapi.infrastructure.dto.reportdto import ReportDTO
 from mealapi.infrastructure.services.ireport import IReportService
 from mealapi.infrastructure.services.iuser import IUserService
-from mealapi.core.domain.user import UserRole
+from mealapi.infrastructure.utils.consts import SECRET_KEY, ALGORITHM
 
 bearer_scheme = HTTPBearer()
 router = APIRouter(
-    tags=["report"],
-    responses={
-        401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden - insufficient permissions"},
-        404: {"description": "Not Found"},
-    }
+    tags=["report"]
 )
 
 
-async def is_admin(user_uuid: str, user_service: IUserService) -> bool:
-    """Check if the user has admin role.
-
-    Args:
-        user_uuid (str): The UUID of the user to check
-        user_service (IUserService): The user service instance
-
-    Returns:
-        bool: True if user is admin, False otherwise
-    """
-    user = await user_service.get_by_uuid(user_uuid)
-    return user is not None and user.role == UserRole.ADMIN
-
-
-@router.post("/create", response_model=ReportDTO, status_code=status.HTTP_201_CREATED)
+@router.post("/create", response_model=ReportDTO)
 @inject
 async def create_report(
-    report: ReportIn,
+    recipe_id: Optional[int] = Query(None, description="ID of the recipe being reported"),
+    comment_id: Optional[int] = Query(None, description="ID of the comment being reported"),
+    reason: ReportReason = Query(..., description="Reason for the report"),
+    description: str = Query(..., description="Additional details about the report"),
     service: IReportService = Depends(Provide[Container.report_service]),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> ReportDTO:
-    """Create a new content report.
-
-    Used to report inappropriate content, spam, or incorrect information.
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+) -> Any:
+    """Create a new report.
 
     Args:
-        report (ReportIn): Report details
-
-    Example request body:
-        {
-            "recipe_id": 1,  # ID of the reported recipe (optional if reporting a comment)
-            "comment_id": 2,  # ID of the reported comment (optional if reporting a recipe)
-            "reason": "INAPPROPRIATE",  # One of: SPAM, INAPPROPRIATE, INCORRECT, OTHER
-            "description": "This recipe contains offensive language"
-        }
+        recipe_id: ID of the recipe being reported (optional)
+        comment_id: ID of the comment being reported (optional)
+        reason: Reason for the report
+        description: Additional details about the report
+        service: The report service (injected)
+        credentials: User credentials
 
     Returns:
-        ReportDTO: Created report with metadata
+        The created report
 
     Raises:
-        HTTPException:
-            - 401: Unauthorized (missing or invalid token)
-            - 400: Invalid report data or missing required fields
+        HTTPException: If unauthorized or if report creation fails
     """
     try:
-        token = credentials.credentials
-        token_payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=[ALGORITHM],
-        )
-        user_uuid = token_payload.get("sub")
-
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_uuid = payload.get("sub")
         if not user_uuid:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication failed: Invalid or missing user ID in token"
+            )
 
-        new_report = await service.add_report(report, UUID(user_uuid))
-        if new_report is None:
-            raise HTTPException(status_code=400, detail="Could not create report")
-        return new_report.model_dump() if new_report else {}
+        # Validate that at least one of recipe_id or comment_id is provided
+        if recipe_id is None and comment_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Validation error: At least one of recipe_id or comment_id must be provided"
+            )
 
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
-
-
-@router.get("/comment/{comment_id}", response_model=list[ReportDTO], status_code=200)
-@inject
-async def get_comment_reports(
-    comment_id: int,
-    service: IReportService = Depends(Provide[Container.report_service]),
-    user_service: IUserService = Depends(Provide[Container.user_service]),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> Iterable[ReportDTO]:
-    """Get all reports for a comment.
-
-    Args:
-        comment_id (int): The ID of the comment.
-
-    Returns:
-        Iterable[ReportDTO]: All reports for the comment.
-
-    Raises:
-        HTTPException:
-            - 401: Unauthorized (missing or invalid token)
-            - 403: Forbidden (not an admin)
-    """
-    try:
-        token = credentials.credentials
-        token_payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=[ALGORITHM],
+        # Create the report
+        report_data = ReportIn(
+            recipe_id=recipe_id,
+            comment_id=comment_id,
+            reason=reason,
+            description=description
         )
-        user_uuid = token_payload.get("sub")
-
-        if not user_uuid:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-
-        # Only admins can view reports
-        if not await is_admin(user_uuid, user_service):
-            raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
-
-        return await service.get_by_comment(comment_id)
+        new_report = await service.add_report(report_data, UUID(user_uuid))
+        if not new_report:
+            raise HTTPException(
+                status_code=500,
+                detail="Server error: Failed to create report"
+            )
+        return new_report
 
     except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
-
-
-@router.get("/user/{user_id}", response_model=list[ReportDTO], status_code=200)
-@inject
-async def get_user_reports(
-    user_id: UUID,
-    service: IReportService = Depends(Provide[Container.report_service]),
-    user_service: IUserService = Depends(Provide[Container.user_service]),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> Iterable[ReportDTO]:
-    """Get all reports by a user.
-
-    Args:
-        user_id (UUID): The ID of the user.
-
-    Returns:
-        Iterable[ReportDTO]: All reports by the user.
-
-    Raises:
-        HTTPException:
-            - 401: Unauthorized (missing or invalid token)
-            - 403: Forbidden (not the user or not an admin)
-    """
-    try:
-        token = credentials.credentials
-        token_payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=[ALGORITHM],
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed: Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-        current_user_uuid = token_payload.get("sub")
-
-        if not current_user_uuid:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-
-        # Allow viewing if it's the user's own reports or if they're an admin
-        if str(user_id) != current_user_uuid and not await is_admin(current_user_uuid, user_service):
-            raise HTTPException(status_code=403, detail="Unauthorized")
-
-        return await service.get_by_reporter(user_id)
-
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
-
-
-@router.get("/status/{status}", response_model=list[ReportDTO], status_code=200)
-@inject
-async def get_reports_by_status(
-    status: ReportStatus,
-    service: IReportService = Depends(Provide[Container.report_service]),
-    user_service: IUserService = Depends(Provide[Container.user_service]),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> Iterable[ReportDTO]:
-    """Get all reports with a specific status.
-
-    Args:
-        status (ReportStatus): The status to filter by.
-
-    Returns:
-        Iterable[ReportDTO]: All reports with the given status.
-
-    Raises:
-        HTTPException:
-            - 401: Unauthorized (missing or invalid token)
-            - 403: Forbidden (not an admin)
-    """
-    try:
-        token = credentials.credentials
-        token_payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=[ALGORITHM],
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Validation error: {str(e)}"
         )
-        user_uuid = token_payload.get("sub")
-
-        if not user_uuid:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-
-        # Only admins can view reports by status
-        if not await is_admin(user_uuid, user_service):
-            raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
-
-        return await service.get_by_status(status)
-
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error: {str(e)}"
+        )
 
 
-@router.get("/all", response_model=list[ReportDTO], status_code=200)
+@router.get("/all", response_model=list[ReportDTO])
 @inject
 async def get_all_reports(
     service: IReportService = Depends(Provide[Container.report_service]),
     user_service: IUserService = Depends(Provide[Container.user_service]),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> Iterable[ReportDTO]:
+) -> Any:
     """Get all reports in the system.
 
     Args:
-        service (IReportService): The injected service dependency.
-        user_service (IUserService): The injected user service dependency.
-        credentials (HTTPAuthorizationCredentials): The credentials.
+        service: The report service (injected)
+        user_service: The user service (injected)
+        credentials: User credentials
 
     Returns:
-        Iterable[ReportDTO]: All reports in the system.
+        list[ReportDTO]: All reports in the system
 
     Raises:
-        HTTPException:
-            - 401: Unauthorized (missing or invalid token)
-            - 403: Forbidden (not an admin)
+        HTTPException: If unauthorized or if user is not an admin
     """
     try:
-        token = credentials.credentials
-        token_payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=[ALGORITHM],
-        )
-        user_uuid = token_payload.get("sub")
-
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_uuid = payload.get("sub")
         if not user_uuid:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication failed: Invalid or missing user ID in token"
+            )
 
-        if not await is_admin(user_uuid, user_service):
-            raise HTTPException(status_code=403, detail="Only admins can view all reports")
+        # Convert user_uuid to UUID object
+        user_uuid_obj = UUID(user_uuid)
+        is_admin = await user_service.is_admin(user_uuid_obj)
+        if not is_admin:
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: Only administrators can view all reports"
+            )
 
-        reports = await service.get_all()
-        return [report.model_dump() for report in reports]
+        return await service.get_all_reports()
 
     except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed: Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Validation error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error: {str(e)}"
+        )
 
 
-@router.put("/{report_id}/status", response_model=ReportDTO, status_code=200)
+@router.get("/my-reports", response_model=List[ReportDTO])
+@inject
+async def get_my_reports(
+    service: IReportService = Depends(Provide[Container.report_service]),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> List[ReportDTO]:
+    """Get all reports made by the authenticated user.
+
+    Args:
+        service: The report service (injected)
+        credentials: User credentials
+
+    Returns:
+        List[ReportDTO]: All reports made by the authenticated user
+
+    Raises:
+        HTTPException: If unauthorized
+    """
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_uuid = payload.get("sub")
+        if not user_uuid:
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication failed: Invalid or missing user ID in token"
+            )
+
+        reports = await service.get_by_reporter(UUID(user_uuid))
+        if not reports:
+            return []
+        return reports
+
+    except jwt.JWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed: Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Validation error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error: {str(e)}"
+        )
+
+
+@router.get("/", response_model=List[ReportDTO])
+@inject
+async def get_reports(
+    report_id: Optional[int] = None,
+    user_id: Optional[UUID] = None,
+    status: Optional[ReportStatus] = None,
+    comment_id: Optional[int] = None,
+    service: IReportService = Depends(Provide[Container.report_service]),
+    user_service: IUserService = Depends(Provide[Container.user_service]),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+) -> List[ReportDTO]:
+    """Get reports with optional filtering.
+    
+    You can filter reports by various criteria. All filters are optional and can be combined.
+    If no filters are provided, returns all reports. Only admins can access this endpoint.
+
+    Args:
+        report_id: Filter by specific report ID
+        user_id: Filter by reporter's UUID
+        status: Filter by report status
+        comment_id: Filter by reported comment ID
+        service: The report service (injected)
+        user_service: The user service (injected)
+        credentials: User credentials
+
+    Returns:
+        List of matching reports
+
+    Raises:
+        HTTPException: If unauthorized or no reports match the criteria
+    """
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_uuid = payload.get("sub")
+        if not user_uuid:
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication failed: Invalid or missing user ID in token"
+            )
+
+        if not await user_service.is_admin(user_uuid):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: Only administrators can use this endpoint"
+            )
+
+        if report_id is not None:
+            report = await service.get_by_id(report_id)
+            if not report:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Not found: Report with ID {report_id} does not exist"
+                )
+            return [report]
+
+        if user_id:
+            reports = await service.get_by_reporter(user_id)
+            if not reports:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Not found: No reports found for user {user_id}"
+                )
+            return reports
+
+        if status:
+            reports = await service.get_by_status(status)
+            if not reports:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Not found: No reports found with status {status}"
+                )
+            return reports
+
+        if comment_id:
+            reports = await service.get_by_comment(comment_id)
+            if not reports:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Not found: No reports found for comment {comment_id}"
+                )
+            return reports
+
+        reports = await service.get_all_reports()
+        return reports
+
+    except jwt.JWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed: Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Validation error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error: {str(e)}"
+        )
+
+
+@router.put("/{report_id}/status", response_model=ReportDTO)
 @inject
 async def update_report_status(
     report_id: int,
@@ -274,53 +316,63 @@ async def update_report_status(
     service: IReportService = Depends(Provide[Container.report_service]),
     user_service: IUserService = Depends(Provide[Container.user_service]),
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> Any:
+) -> ReportDTO:
     """Update a report's status.
 
     Args:
-        report_id (int): The ID of the report.
-        status (ReportStatus): The new status.
-        resolution_note (str | None): Note explaining the resolution.
-        service (IReportService): The injected service dependency.
-        user_service (IUserService): The injected user service dependency.
-        credentials (HTTPAuthorizationCredentials): The credentials.
+        report_id: The ID of the report to update
+        status: The new status
+        resolution_note: Optional note explaining the resolution
+        service: The report service (injected)
+        user_service: The user service (injected)
+        credentials: User credentials
 
     Returns:
-        dict: The updated report attributes.
+        The updated report
 
     Raises:
-        HTTPException:
-            - 401: Unauthorized (missing or invalid token)
-            - 403: Forbidden (not an admin)
-            - 404: Report not found
+        HTTPException: If unauthorized or report not found
     """
     try:
-        token = credentials.credentials
-        token_payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=[ALGORITHM],
-        )
-        user_uuid = token_payload.get("sub")
-
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_uuid = payload.get("sub")
         if not user_uuid:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication failed: Invalid or missing user ID in token"
+            )
 
-        if not await is_admin(user_uuid, user_service):
-            raise HTTPException(status_code=403, detail="Only admins can update report status")
+        if not await user_service.is_admin(user_uuid):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: Only administrators can update report status"
+            )
 
-        report = await service.update_status(
-            report_id,
-            status,
-            resolved_by=UUID(user_uuid) if status in [ReportStatus.RESOLVED, ReportStatus.REJECTED] else None,
-            resolution_note=resolution_note if status in [ReportStatus.RESOLVED, ReportStatus.REJECTED] else None,
-        )
-        if report is None:
-            raise HTTPException(status_code=404, detail="Report not found")
-        return report.model_dump()
+        updated_report = await service.update_report_status(report_id, status, UUID(user_uuid), resolution_note)
+        if not updated_report:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Not found: Report with ID {report_id} does not exist"
+            )
+        
+        return updated_report
 
     except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed: Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Validation error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error: {str(e)}"
+        )
 
 
 @router.delete("/{report_id}", status_code=204)
@@ -334,37 +386,48 @@ async def delete_report(
     """Delete a report.
 
     Args:
-        report_id (int): The ID of the report.
-        service (IReportService): The injected service dependency.
-        user_service (IUserService): The injected user service dependency.
-        credentials (HTTPAuthorizationCredentials): The credentials.
+        report_id: The ID of the report to delete
+        service: The report service (injected)
+        user_service: The user service (injected)
+        credentials: User credentials
 
     Raises:
-        HTTPException:
-            - 401: Unauthorized (missing or invalid token)
-            - 403: Forbidden (not an admin)
-            - 404: Report not found
+        HTTPException: If unauthorized or report not found
     """
     try:
-        token = credentials.credentials
-        token_payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=[ALGORITHM],
-        )
-        user_uuid = token_payload.get("sub")
-
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        user_uuid = payload.get("sub")
         if not user_uuid:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
+            raise HTTPException(
+                status_code=401,
+                detail="Authentication failed: Invalid or missing user ID in token"
+            )
 
-        # Only admins can delete reports
-        if not await is_admin(user_uuid, user_service):
-            raise HTTPException(status_code=403, detail="Unauthorized - Admin access required")
+        if not await user_service.is_admin(user_uuid):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: Only administrators can delete reports"
+            )
 
-        if await service.delete_report(report_id):
-            return
-
-        raise HTTPException(status_code=404, detail="Report not found")
+        if not await service.delete_report(report_id):
+            raise HTTPException(
+                status_code=404,
+                detail=f"Not found: Report with ID {report_id} does not exist"
+            )
 
     except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication failed: Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Validation error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error: {str(e)}"
+        )

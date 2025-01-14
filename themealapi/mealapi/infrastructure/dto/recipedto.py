@@ -1,62 +1,31 @@
-"""Module containing recipe data transfer objects.
-
-This module defines the DTO (Data Transfer Object) models for recipes,
-which are used to transfer recipe data between different layers of the application
-and to format the response data sent to clients, including associated comments and ratings.
-"""
+"""A module containing recipe DTO model."""
 
 from datetime import datetime
 from typing import List, Optional, Dict
 from pydantic import BaseModel, ConfigDict
 from uuid import UUID
-from asyncpg import Record
-from mealapi.core.domain.recipe import RecipeIn
 from mealapi.core.domain.rating import Rating
 from mealapi.infrastructure.dto.commentdto import CommentDTO
 
 
 class RecipeDTO(BaseModel):
-    """Data Transfer Object for recipes.
-    
-    This class represents the recipe data that is sent to clients in API responses.
-    It includes all recipe information along with associated comments and ratings.
-    
-    Attributes:
-        id (int): Unique identifier of the recipe
-        name (str): Title of the recipe
-        description (Optional[str]): Short description or introduction
-        instructions (str): Detailed cooking instructions
-        category (str): Recipe category (e.g., 'Dessert', 'Main Course')
-        ingredients (List[str]): List of ingredients with amounts
-        preparation_time (int): Time needed to prepare in minutes
-        servings (Optional[int]): Number of servings
-        difficulty (Optional[str]): Recipe difficulty level
-        average_rating (Optional[float]): Average user rating (0.0-5.0)
-        author (UUID): ID of the user who created the recipe
-        created_at (datetime): Timestamp when the recipe was created
-        steps (List[str]): Detailed preparation steps
-        tags (Optional[List[str]]): Recipe tags for categorization
-        comments (List[CommentDTO]): List of comments on the recipe
-        ratings (List[Rating]): List of user ratings
-        ai_detected (Optional[float]): AI content detection confidence score
-    """
+    """A model representing DTO for recipe data."""
     id: int
     name: str
     description: Optional[str] = None
     instructions: str
     category: str
-    ingredients: List[str]
+    ingredients: List[str] 
     preparation_time: int
     servings: Optional[int] = None
     difficulty: Optional[str] = None
     average_rating: Optional[float] = None
-    author: UUID
+    ai_detected: Optional[float] = None
+    author: UUID  
     created_at: datetime
     steps: List[str]
     tags: Optional[List[str]] = None
     comments: List[CommentDTO] = []
-    ratings: List[Rating] = []
-    ai_detected: Optional[float] = None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -66,40 +35,50 @@ class RecipeDTO(BaseModel):
 
     @classmethod
     def from_record(cls, record: Dict) -> "RecipeDTO":
-        """Create a RecipeDTO from a database record.
-
-        This method handles the conversion of database records into RecipeDTO instances,
-        including the processing of nested comments and ratings data.
+        """A method for preparing DTO instance based on DB record.
 
         Args:
-            record (Dict): Database record containing recipe data and related entities
+            record (Dict): The DB record.
 
         Returns:
-            RecipeDTO: A new RecipeDTO instance containing the recipe data and its relations
-
-        Example:
-            >>> record = {
-            ...     "id": 1,
-            ...     "name": "Chocolate Cake",
-            ...     "instructions": "Mix and bake...",
-            ...     "author": UUID("550e8400-e29b-41d4-a716-446655440000"),
-            ...     "comments": [{"id": 1, "content": "Great recipe!"}],
-            ...     "ratings": [{"id": 1, "value": 5}]
-            ... }
-            >>> recipe_dto = RecipeDTO.from_record(record)
+            RecipeDTO: The final DTO instance.
         """
-        # Convert comments to DTOs if present
+        # Converting comments to DTOs
         if 'comments' in record and record['comments']:
-            record['comments'] = [
-                CommentDTO.from_record(comment) if isinstance(comment, dict) else comment
-                for comment in record['comments']
-            ]
-
-        # Convert ratings to Rating objects if present
-        if 'ratings' in record and record['ratings']:
-            record['ratings'] = [
-                Rating(**rating) if isinstance(rating, dict) else rating
-                for rating in record['ratings']
-            ]
+            comments = []
+            for comment in record['comments']:
+                rating = None
+                if comment.get('rating_id') is not None and 'ratings' in record and record['ratings']:
+                    for r in record['ratings']:
+                        if r['id'] == comment['rating_id']:
+                            rating = Rating(
+                                id=r['id'],
+                                value=r['value'],
+                                recipe_id=r['recipe_id'],
+                                author=r['author'],
+                                created_at=r['created_at']
+                            )
+                            break
+                
+                comment_dto = CommentDTO(
+                    id=comment['id'],
+                    content=comment['content'],
+                    recipe_id=comment['recipe_id'],
+                    author=comment['author'],
+                    created_at=comment['created_at'],
+                    rating=rating
+                )
+                comments.append(comment_dto)
+            record['comments'] = comments
+        else:
+            record['comments'] = []
+            
+        required_fields = {
+            'id', 'name', 'instructions', 'category', 'ingredients',
+            'preparation_time', 'author', 'created_at', 'steps'
+        }
+        missing_fields = required_fields - set(record.keys())
+        if missing_fields:
+            raise ValueError(f"Missing required fields: {missing_fields}")
 
         return cls(**record)

@@ -2,11 +2,8 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from uuid import UUID
-
-from pydantic import BaseModel
 
 from mealapi.core.domain.user import UserIn, UserRole
 from mealapi.infrastructure.dto.userdto import UserDTO
@@ -47,6 +44,17 @@ class IUserService(ABC):
 
         Returns:
             UserDTO | None: The user data, if found.
+        """
+
+    @abstractmethod
+    async def is_admin(self, user_uuid: str | UUID) -> bool:
+        """Check if the user has admin role.
+
+        Args:
+            user_uuid (str | UUID): The UUID of the user to check
+
+        Returns:
+            bool: True if user is admin, False otherwise
         """
 
     @abstractmethod

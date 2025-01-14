@@ -6,8 +6,10 @@ passlib==1.7.4
 pydantic==2.9.2
 pydantic-settings==2.6.1
 python-dateutil==2.8.2
+python-dotenv==1.0.0
 python-jose==3.3.0
 SQLAlchemy==2.0.36
 uvicorn==0.32.0
 uuid_utils==0.10.0
+asyncpg~=0.30.0
 aiohttp==3.10.10

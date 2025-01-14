@@ -1,37 +1,18 @@
-"""Module containing comment data transfer objects.
-
-This module defines the DTO (Data Transfer Object) models for comments,
-which are used to transfer comment data between different layers of the application
-and to format the response data sent to clients.
-"""
-
+"""Module containing comment data transfer objects."""
 from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
-from mealapi.infrastructure.utils.comment_validator import CommentValidator
 from databases.interfaces import Record
+from mealapi.core.domain.rating import Rating
 
 
 class CommentDTO(BaseModel):
-    """Data Transfer Object for comments.
-    
-    This class represents the comment data that is sent to clients in API responses.
-    It includes all necessary comment information while excluding sensitive or internal data.
-    
-    Attributes:
-        id (int): Unique identifier of the comment
-        author (UUID): ID of the user who created the comment
-        recipe_id (int): ID of the recipe this comment belongs to
-        content (str): The text content of the comment
-        rating_id (Optional[int]): ID of the associated rating, if any
-        created_at (datetime): Timestamp when the comment was created
-    """
     id: int
     author: UUID
-    recipe_id: int
+    recipe_id: Optional[int] = None
     content: str
-    rating_id: Optional[int] = None
+    rating: Optional[Rating] = None
     created_at: datetime
 
     model_config = ConfigDict(
@@ -44,38 +25,33 @@ class CommentDTO(BaseModel):
     def from_record(cls, record: Union[dict, Record]) -> "CommentDTO":
         """Create a CommentDTO from a database record.
 
-        This method handles the conversion of database records (either as dict or Record objects)
-        into CommentDTO instances, ensuring all required fields are properly mapped.
-
         Args:
-            record (Union[dict, Record]): Database record containing comment data
+            record (dict | Record): The database record.
 
         Returns:
-            CommentDTO: A new CommentDTO instance containing the comment data
-
-        Example:
-            >>> record = {
-            ...     "id": 1,
-            ...     "author": UUID("550e8400-e29b-41d4-a716-446655440000"),
-            ...     "recipe_id": 123,
-            ...     "content": "Great recipe!",
-            ...     "rating_id": 456,
-            ...     "created_at": datetime.now()
-            ... }
-            >>> comment_dto = CommentDTO.from_record(record)
+            CommentDTO: The created DTO.
         """
         if not isinstance(record, dict):
             record = dict(record)
+            
+        # Create rating object if rating data exists
+        rating = None
+        if record.get("value") is not None:
+            rating = Rating.model_validate({
+                "id": record["rating_id"],
+                "value": record["value"],
+                "recipe_id": record["rating_recipe_id"],
+                "author": record["rating_author"],
+                "created_at": record["rating_created_at"]
+            })
             
         dto_data = {
             "id": record["id"],
             "author": record["author"],
             "recipe_id": record["recipe_id"],
             "content": record["content"],
-            "created_at": record["created_at"]
+            "created_at": record["created_at"],
+            "rating": rating
         }
-        
-        if record.get("rating_id") is not None:
-            dto_data["rating_id"] = record["rating_id"]
             
         return cls(**dto_data)

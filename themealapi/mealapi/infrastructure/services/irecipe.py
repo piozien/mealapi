@@ -1,10 +1,11 @@
 """Module containing recipe service abstractions."""
 
-from typing import Iterable, List, Optional
+from typing import Iterable, List
 from uuid import UUID
 from abc import ABC, abstractmethod
 from mealapi.core.domain.recipe import Recipe
 from mealapi.infrastructure.dto.recipedto import RecipeDTO
+
 
 class IRecipeService(ABC):
     """A class representing recipe repository"""

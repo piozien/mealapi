@@ -12,6 +12,8 @@ services:
       - DB_NAME=app
       - DB_USER=postgres
       - DB_PASSWORD=pass
+    env_file:
+      - .env
     depends_on:
       - db
     networks:

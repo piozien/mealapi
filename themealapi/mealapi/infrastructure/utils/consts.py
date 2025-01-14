@@ -1,5 +1,12 @@
-"""A module containing constant values for infrastructure layer."""
+"""Module containing application constants."""
+import os
+from dotenv import load_dotenv
 
-EXPIRATION_MINUTES = 30
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"  # TODO: -> random generation - it's safe
-ALGORITHM = "HS256"
+load_dotenv()
+
+EXPIRATION_MINUTES = int(os.getenv('EXPIRATION_MINUTES', 30))
+SECRET_KEY = os.getenv('SECRET_KEY', "")
+ALGORITHM = os.getenv('ALGORITHM', 'HS256')
+
+API_URL_SAPLING = os.getenv('API_URL_SAPLING', "")
+API_KEY_SAPLING = os.getenv('API_KEY_SAPLING', "")

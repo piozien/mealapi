@@ -19,10 +19,9 @@
 123e4567-e89b-12d3-a456-426614174001
 {
   "token_type": "Bearer",
-  "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDEiLCJleHAiOjE3MzU4NDA4NzUsInR5cGUiOiJjb25maXJtYXRpb24iLCJyb2xlIjoiVVNFUiJ9.feCUQRQIKRrkRsGTy1c2lLNMMWX1RFblgd8ob5J9FXI",
-  "expires": "2025-01-02T18:01:15.959336Z"
+  "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDEiLCJleHAiOjE3MzYyNzM5NzAsInR5cGUiOiJjb25maXJtYXRpb24iLCJyb2xlIjoiVVNFUiJ9.PC_ESasAEM5QNMAa6YzDNicIdd3_iDWtYeTZ0B8M_d0",
+  "expires": "2025-01-07T18:19:30.879763Z"
 }
-
 
 
 {
@@ -30,6 +29,7 @@
   "password": "admin123",
   "role": "USER"
 }
+
 
 123e4567-e89b-12d3-a456-426614174002
 
@@ -142,4 +142,79 @@
 
 
 
+
+
+
+{
+  "name": "Pancakes z syropem klonowym",
+  "description": "Prosty i szybki przepis na pyszne amerykańskie naleśniki z dodatkiem syropu klonowego.",
+  "instructions": "Test AI",
+  "category": "śniadanie",
+  "ingredients": [
+    "200g:mąka pszenna",
+    "2 łyżki:cukier",
+    "1 łyżeczka:proszek do pieczenia",
+    "szczypta:sól",
+    "2:sztuki jajka",
+    "250ml:mleko",
+    "50g:masło roztopione",
+    "do smażenia:olej",
+    "do podania:syrop klonowy"
+  ],
+  "preparation_time": 20,
+  "servings": 4,
+  "difficulty": "łatwy",
+  "steps": [
+    "W dużej misce wymieszaj mąkę, cukier, proszek do pieczenia i sól.",
+    "W drugiej misce roztrzep jajka z mlekiem i roztopionym masłem.",
+    "Połącz mokre składniki z suchymi, mieszając do uzyskania gładkiego ciasta.",
+    "Rozgrzej patelnię z odrobiną oleju na średnim ogniu.",
+    "Wylej porcje ciasta na patelnię i smaż z obu stron, aż będą złote.",
+    "Podawaj z syropem klonowym i ulubionymi dodatkami."
+  ],
+  "tags": [
+    "śniadanie",
+    "naleśniki",
+    "szybkie"
+  ]
+}
+{
+    "name": "Pancakes with maple syrup",
+    "description": "A simple and quick recipe for delicious American pancakes with maple syrup.",
+    "instructions": "1. In a large bowl, mix the flour, sugar, baking powder and salt. 2. In a second bowl, whisk the eggs with the milk and melted butter. 3. Combine the wet ingredients with the dry ingredients, stirring until you have a smooth batter. 4. Heat a skillet with a little oil over medium heat. 5. Pour portions of the batter into the pan and fry on both sides until golden.6. Serve with maple syrup and your favorite toppings.",
+    "category": "breakfast",
+    "ingredients": [
+        "200g:wheat flour",
+        "2 spoons:sugar",
+        "1 teaspoon:baking powder",
+        "pinch:salt",
+        "2:pieces of egg",
+        "250ml:milk",
+        "50g:butter melted",
+        "for frying:oil",
+        "to serve:maple syrup"
+    ],
+    "preparation_time": 20,
+    "servings": 4,
+    "difficulty": "easy",
+    "steps": [
+        "In a large bowl, mix flour, sugar, baking powder, and salt.",
+        "In another bowl, whisk the eggs with milk and melted butter.",
+        "Combine the wet ingredients with the dry ones, stirring until a smooth batter forms.",
+        "Heat a pan with a bit of oil over medium heat.",
+        "Pour portions of the batter onto the pan and cook on both sides until golden.",
+        "Serve with maple syrup and your favorite toppings."
+    ],
+    "tags": [
+        "breakfast",
+        "pancakes",
+        "quick"
+    ]
+    }
+
 01941820-19d2-7bf3-bd92-7e7621acc0e3
+
+
+
+mleko,jajka,mąka,śmietana  0.5 lub 0.4
+

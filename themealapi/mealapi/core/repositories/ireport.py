@@ -1,81 +1,54 @@
-"""Module containing report repository abstractions.
-
-This module defines the interface for report repositories, specifying
-the contract that any report repository implementation must fulfill.
-The interface provides methods for managing content reports in the
-data storage, including creation, retrieval, and resolution of reports.
-"""
+"""Module containing report repository abstractions."""
 
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
+
 from uuid import UUID
 from mealapi.core.domain.report import ReportIn, ReportStatus
 
 
 class IReportRepository(ABC):
-    """Abstract base class defining the report repository interface.
-    
-    This interface defines all operations that must be supported by
-    any concrete report repository implementation. It provides methods
-    for managing content reports, including creation, retrieval by
-    various criteria, and report resolution.
-    """
+    """An abstract class representing protocol of report repository."""
 
     @abstractmethod
     async def get_all_reports(self) -> Iterable[Any]:
-        """Retrieve all reports from the system.
+        """Get all reports.
 
         Returns:
-            Iterable[Any]: Collection of all reports
-
-        Note:
-            Reports should be ordered by creation date, with the
-            most recent reports first.
+            Iterable[Any]: All reports in the system
         """
 
     @abstractmethod
     async def get_by_status(self, status: ReportStatus) -> Iterable[Any]:
-        """Retrieve all reports with a specific status.
+        """Get all reports with a specific status.
 
         Args:
-            status (ReportStatus): Status to filter by (e.g., PENDING, RESOLVED)
+            status (ReportStatus): The status to filter by
 
         Returns:
-            Iterable[Any]: Collection of reports with the given status
-
-        Note:
-            Results should be ordered by creation date, with the
-            oldest pending reports first.
+            Iterable[Any]: All reports with the given status
         """
 
     @abstractmethod
     async def get_by_comment(self, comment_id: int) -> Iterable[Any]:
-        """Retrieve all reports for a specific comment.
+        """Get all reports for a specific comment.
 
         Args:
-            comment_id (int): ID of the reported comment
+            comment_id (int): The ID of the comment
 
         Returns:
-            Iterable[Any]: Collection of reports for the comment
-
-        Note:
-            Multiple reports may exist for the same comment from
-            different users.
+            Iterable[Any]: All reports for the comment
         """
 
     @abstractmethod
     async def get_by_reporter(self, user_id: UUID) -> Iterable[Any]:
-        """Retrieve all reports made by a specific user.
+        """Get all reports made by a specific user.
 
         Args:
-            user_id (UUID): ID of the user who made the reports
+            user_id (UUID): The ID of the user who made the reports
 
         Returns:
-            Iterable[Any]: Collection of reports made by the user
-
-        Note:
-            Results should be ordered by creation date, with the
-            most recent reports first.
+            Iterable[Any]: All reports made by the user
         """
 
     @abstractmethod
@@ -90,18 +63,15 @@ class IReportRepository(ABC):
         """
 
     @abstractmethod
-    async def add_report(self, report: ReportIn) -> Any:
-        """Create a new content report.
+    async def add_report(self, report: ReportIn, reporter_id: UUID) -> Any:
+        """Add a new report.
 
         Args:
-            report (ReportIn): Report data to create
+            report (ReportIn): The report to add
+            reporter_id (UUID): The ID of the user reporting the comment
 
         Returns:
-            Any: The created report with generated ID and metadata
-
-        Note:
-            The method should validate that the same user hasn't
-            already reported the same content.
+            Any: The newly created report
         """
 
     @abstractmethod
@@ -109,17 +79,13 @@ class IReportRepository(ABC):
         """Update the status of a report.
 
         Args:
-            report_id (int): ID of the report to update
-            status (ReportStatus): New status for the report
-            resolved_by (UUID): ID of the admin resolving the report
+            report_id (int): The ID of the report
+            status (ReportStatus): The new status
+            resolved_by (UUID7): The ID of the admin who resolved the report
             resolution_note (str): Note explaining the resolution
 
         Returns:
-            Any: The updated report data
-
-        Note:
-            This method should set the resolution timestamp and
-            handle any required notifications.
+            Any: The updated report
         """
 
     @abstractmethod

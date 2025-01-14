@@ -1,8 +1,7 @@
 """A module containing user service implementation."""
-
+from abc import ABC
 from uuid import UUID
 from fastapi import HTTPException
-from pydantic import BaseModel
 
 from mealapi.core.domain.user import UserIn, UserRole
 from mealapi.core.repositories.iuser import IUserRepository
@@ -13,7 +12,7 @@ from mealapi.infrastructure.utils.password import verify_password
 from mealapi.infrastructure.utils.token import generate_user_token
 
 
-class UserService(IUserService):
+class UserService(IUserService, ABC):
     """An abstract class for user service."""
 
     _repository: IUserRepository
@@ -31,7 +30,7 @@ class UserService(IUserService):
             UserDTO | None: The user DTO model.
         """
         if user_data := await self._repository.register_user(user):
-            return UserDTO.from_orm(user_data)
+            return UserDTO.model_validate(user_data)
         return None
 
     async def authenticate_user(self, user: UserIn) -> TokenDTO | None:
@@ -68,8 +67,26 @@ class UserService(IUserService):
             UserDTO | None: The user data, if found.
         """
         if user_data := await self._repository.get_by_uuid(uuid):
-            return UserDTO.from_orm(user_data)
+            return UserDTO.model_validate(user_data)
         return None
+
+    async def is_admin(self, user_uuid: str | UUID | UserDTO) -> bool:
+        """Check if the user has admin role.
+
+        Args:
+            user_uuid (str | UUID | UserDTO): The UUID of the user to check, or UserDTO object
+
+        Returns:
+            bool: True if user is admin, False otherwise
+        """
+        if isinstance(user_uuid, UserDTO):
+            return user_uuid.role == UserRole.ADMIN
+            
+        if isinstance(user_uuid, str):
+            user_uuid = UUID(user_uuid)
+            
+        user = await self.get_by_uuid(user_uuid)
+        return user is not None and user.role == UserRole.ADMIN
 
     async def update_role(self, user_id: UUID, role: UserRole) -> UserDTO | None:
         """Update user's role.
@@ -82,5 +99,5 @@ class UserService(IUserService):
             UserDTO | None: The updated user if successful
         """
         if updated_user := await self._repository.update_role(user_id, role):
-            return UserDTO.from_orm(updated_user)
+            return UserDTO.model_validate(updated_user)
         return None

@@ -1,37 +1,74 @@
-"""Module containing rating domain models.
-
-This module defines the data models for handling recipe ratings in the application.
-Ratings are numerical values (1-5) that users can assign to recipes.
-"""
-
-from datetime import datetime
+"""Module containing rating domain models"""
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class RatingIn(BaseModel):
-    """Model for creating a new rating.
-    
+    """Model for rating input.
+
     Attributes:
-        value (int): Rating value from 1 to 5
-        recipe_id (int): ID of the recipe being rated
-        author (UUID): ID of the user creating the rating
+        value: Rating value (1-5)
     """
+    value: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode='after')
+    def validate_rating(self) -> 'RatingIn':
+        """Validate rating value.
+        
+        Returns:
+            The validated rating model
+            
+        Raises:
+            ValueError: If the rating value is invalid
+        """
+        if self.value is not None:
+            if not isinstance(self.value, int):
+                raise ValueError("Rating value must be an integer")
+            if self.value < 1 or self.value > 5:
+                raise ValueError("Rating value must be between 1 and 5")
+        return self
+
+
+class Rating(BaseModel):
+    """Model representing rating attributes.
+
+    Attributes:
+        id: Unique identifier of the rating
+        value: Rating value (1-5)
+        recipe_id: ID of the recipe being rated
+        author: UUID of the user who created the rating
+        created_at: Timestamp when the rating was created
+    """
+    id: Optional[int] = Field(
+        default=None,
+        description="Unique identifier of the rating"
+    )
     value: int
-    recipe_id: int
-    author: UUID
+    recipe_id: int = Field(..., description="ID of the recipe being rated", gt=0)
+    author: UUID = Field(..., description="UUID of the user who created the rating")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Timestamp when the rating was created"
+    )
 
+    model_config = ConfigDict(from_attributes=True)
 
-class Rating(RatingIn):
-    """Model representing a complete rating in the database.
-    
-    Extends RatingIn to include additional fields for database storage.
-    
-    Attributes:
-        id (Optional[int]): Unique identifier of the rating
-        created_at (Optional[datetime]): Timestamp when the rating was created
-    """
-    id: Optional[int] = None
-    created_at: Optional[datetime] = None
-    model_config = ConfigDict(from_attributes=True, extra="ignore")
+    @model_validator(mode='after')
+    def validate_rating(self) -> 'Rating':
+        """Validate rating value.
+        
+        Returns:
+            The validated rating model
+            
+        Raises:
+            ValueError: If the rating value is invalid
+        """
+        if not isinstance(self.value, int):
+            raise ValueError("Rating value must be an integer")
+        if self.value < 1 or self.value > 5:
+            raise ValueError("Rating value must be between 1 and 5")
+        return self

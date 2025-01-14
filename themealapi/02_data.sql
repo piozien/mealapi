@@ -1,57 +1,51 @@
--- Dodanie użytkowników
+-- Adding users
 INSERT INTO users (id, email, password, role) VALUES 
-('123e4567-e89b-12d3-a456-426614174000', 'admin', '$2b$12$5Qd/obiEBXIr0HiL3Xm5xusPLOAhL9gsSMcCk0tIxAfAyJGLHYJIG', 'ADMIN'),  -- hasło: admin123
-('123e4567-e89b-12d3-a456-426614174001', 'user1', '$2b$12$5Qd/obiEBXIr0HiL3Xm5xusPLOAhL9gsSMcCk0tIxAfAyJGLHYJIG', 'USER'),   -- hasło: admin123
-('123e4567-e89b-12d3-a456-426614174002', 'user2', '$2b$12$5Qd/obiEBXIr0HiL3Xm5xusPLOAhL9gsSMcCk0tIxAfAyJGLHYJIG', 'USER');   -- hasło: admin123
+('123e4567-e89b-12d3-a456-426614174000', 'admin', '$2b$12$5Qd/obiEBXIr0HiL3Xm5xusPLOAhL9gsSMcCk0tIxAfAyJGLHYJIG', 'ADMIN'),  -- password: admin123
+('123e4567-e89b-12d3-a456-426614174001', 'user1', '$2b$12$5Qd/obiEBXIr0HiL3Xm5xusPLOAhL9gsSMcCk0tIxAfAyJGLHYJIG', 'USER'),   -- password: admin123
+('123e4567-e89b-12d3-a456-426614174002', 'user2', '$2b$12$5Qd/obiEBXIr0HiL3Xm5xusPLOAhL9gsSMcCk0tIxAfAyJGLHYJIG', 'USER');   -- password: admin123
+-- Adding recipes
+INSERT INTO recipes (name, description, instructions, category, author, preparation_time, servings, difficulty, ingredients, steps, tags) VALUES
+('Spaghetti Carbonara', 'A classic Italian pasta dish with an egg and pancetta-based sauce', 
+'Prepare the ingredients and cook the pasta al dente. Meanwhile, prepare the sauce....', 'Main dishes', 
+'123e4567-e89b-12d3-a456-426614174001', 30, 4, 'medium',
+ARRAY['400g:spaghetti pasta', '200g:pancetta', '4:eggs', '100g:parmesan', 'to taste:salt', 'to taste:pepper'],  
+ARRAY['Boil water and cook the pasta', 'Fry the pancetta', 'Mix the eggs with parmesan', 'Combine all ingredients', 'Serve hot'],  
+ARRAY['Italian', 'pasta', 'quick']),
 
--- Dodanie przepisów
-INSERT INTO recipes (id, name, description, instructions, category, author, created_at, preparation_time, servings, difficulty, ingredients, steps, tags) VALUES
-(1, 'Spaghetti Carbonara', 'Klasyczne włoskie danie z makaronu z sosem na bazie jajek i pancetty', 
-'Przygotuj składniki i ugotuj makaron al dente. W międzczasie przygotuj sos...', 'Dania główne', 
-'123e4567-e89b-12d3-a456-426614174001', '2023-12-14 12:00:00+00', 30, 4, 'średni',
-ARRAY['400g:makaron spaghetti', '200g:pancetta', '4:jajka', '100g:parmezan', 'do smaku:sól', 'do smaku:pieprz'],
-ARRAY['Ugotuj makaron', 'Podsmaż pancettę', 'Przygotuj sos z jajek i sera', 'Połącz wszystkie składniki'],
-ARRAY['włoskie', 'makaron', 'szybkie']),
 
-(2, 'Brownie czekoladowe', 'Wilgotne i intensywnie czekoladowe ciasto', 
-'Rozpuść czekoladę z masłem, dodaj pozostałe składniki...', 'Desery', 
-'123e4567-e89b-12d3-a456-426614174002', '2023-12-14 13:00:00+00', 45, 8, 'łatwy',
-ARRAY['200g:masło', '200g:czekolada', '200g:cukier', '3:jajka', '120g:mąka'],
-ARRAY['Rozpuść czekoladę z masłem', 'Wymieszaj składniki suche', 'Połącz wszystko', 'Piecz 25 minut'],
-ARRAY['deser', 'czekolada', 'ciasto']),
+('Chocolate Brownie', 'Moist and intensely chocolatey cake',  
+'Melt the chocolate with butter, add the remaining ingredients...', 'Desserts',  
+'123e4567-e89b-12d3-a456-426614174002', 45, 8, 'easy',  
+ARRAY['200g:butter', '200g:chocolate', '200g:sugar', '3:eggs', '120g:flour'],  
+ARRAY['Melt the chocolate with butter', 'Mix with sugar', 'Add eggs and flour', 'Bake for 25 minutes'],  
+ARRAY['dessert', 'chocolate', 'cake']),
 
-(3, 'Sałatka grecka', 'Klasyczna sałatka z pomidorów, ogórków i fety', 
-'Pokrój warzywa, dodaj fetę i oliwki...', 'Sałatki', 
-'123e4567-e89b-12d3-a456-426614174001', '2023-12-14 14:00:00+00', 15, 2, 'łatwy',
-ARRAY['2:pomidory', '1:ogórek', '100g:ser feta', '50g:oliwki czarne', '1:czerwona cebula', 'do smaku:oliwa z oliwek'],
-ARRAY['Pokrój warzywa', 'Dodaj fetę i oliwki', 'Skrop oliwą', 'Dopraw solą i pieprzem'],
-ARRAY['sałatka', 'wegetariańskie', 'greckie']),
 
-(4, 'Tort czekoladowy', 'Puszysty tort z kremem czekoladowym', 
-'Przygotuj ciasto czekoladowe i krem...', 'Desery', 
-'123e4567-e89b-12d3-a456-426614174002', '2023-12-14 15:00:00+00', 90, 12, 'średni',
-ARRAY['250g:masło', '300g:czekolada deserowa', '250g:cukier', '6:jajka', '200g:mąka', '500ml:śmietana 36%'],
-ARRAY['Rozpuść czekoladę z masłem', 'Ubij jajka z cukrem', 'Dodaj mąkę i proszek', 'Upiecz biszkopt', 'Przygotuj krem', 'Przełóż tort kremem'],
-ARRAY['deser', 'czekolada', 'tort', 'przyjęcia']);
+('Greek Salad', 'A classic salad with tomatoes, cucumbers, and feta',  
+'Chop the vegetables, add feta and olives...', 'Salads',  
+'123e4567-e89b-12d3-a456-426614174001', 15, 2, 'easy',  
+ARRAY['2:tomatoes', '1:cucumber', '100g:feta cheese', '50g:black olives', '1:red onion', 'to taste:olive oil'],  
+ARRAY['Chop the vegetables into cubes', 'Add crumbled feta', 'Add olives', 'Drizzle with olive oil', 'Season to taste'],  
+ARRAY['salad', 'vegetarian', 'Greek']),
 
--- Reset sekwencji dla recipes
-ALTER SEQUENCE recipes_id_seq RESTART WITH 5;
 
--- Reset sekwencji dla ratings
-ALTER SEQUENCE ratings_id_seq RESTART WITH 4;
+('Chocolate Cake', 'A fluffy cake with chocolate cream',  
+'Prepare the chocolate cake and cream...', 'Desserts',  
+'123e4567-e89b-12d3-a456-426614174002', 90, 12, 'medium',  
+ARRAY['250g:butter', '300g:dark chocolate', '250g:sugar', '6:eggs', '200g:flour', '500ml:heavy cream (36%)'],  
+ARRAY['Prepare the cake batter', 'Bake the layers', 'Prepare the cream', 'Assemble the cake', 'Decorate'],  
+ARRAY['cake', 'chocolate', 'celebrations']);
 
--- Reset sekwencji dla comments
-ALTER SEQUENCE comments_id_seq RESTART WITH 5;
 
--- Dodanie ocen
-INSERT INTO ratings (id, author, recipe_id, value, created_at) VALUES
-(1, '123e4567-e89b-12d3-a456-426614174001', 1, 5, '2023-12-14 15:00:00+00'),
-(2, '123e4567-e89b-12d3-a456-426614174002', 1, 4, '2023-12-14 15:30:00+00'),
-(3, '123e4567-e89b-12d3-a456-426614174001', 2, 5, '2023-12-14 16:00:00+00');
+-- Adding ratings
+INSERT INTO ratings (author, recipe_id, value) VALUES
+('123e4567-e89b-12d3-a456-426614174001', 1, 5),
+('123e4567-e89b-12d3-a456-426614174002', 1, 4),
+('123e4567-e89b-12d3-a456-426614174001', 2, 5);
 
--- Dodanie komentarzy
-INSERT INTO comments (id, author, recipe_id, created_at, content, rating_id) VALUES
-(1, '123e4567-e89b-12d3-a456-426614174001', 1, '2023-12-14 15:00:00+00', 'Świetny przepis! Wyszło dokładnie jak w restauracji.', 1),
-(2, '123e4567-e89b-12d3-a456-426614174002', 1, '2023-12-14 15:30:00+00', 'Bardzo dobre, ale dodałbym więcej pieprzu.', 2),
-(3, '123e4567-e89b-12d3-a456-426614174001', 2, '2023-12-14 16:00:00+00', 'Najlepsze brownie jakie jadłem!', 3),
-(4, '123e4567-e89b-12d3-a456-426614174002', 3, '2023-12-14 16:30:00+00', 'Prosta i smaczna sałatka.', NULL);
+-- Adding comments
+INSERT INTO comments (author, recipe_id, content, rating_id) VALUES  
+('123e4567-e89b-12d3-a456-426614174001', 1, 'Great recipe! It turned out just like in a restaurant.', 1),  
+('123e4567-e89b-12d3-a456-426614174002', 1, 'Very good, but I would add more pepper.', 2),  
+('123e4567-e89b-12d3-a456-426614174001', 2, 'The best brownie I’ve ever had!', 3),  
+('123e4567-e89b-12d3-a456-426614174002', 3, 'Simple and tasty salad.', NULL);  

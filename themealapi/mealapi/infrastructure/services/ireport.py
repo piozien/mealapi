@@ -1,6 +1,6 @@
 """Module containing report service abstractions."""
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional
+from typing import Iterable
 
 from uuid import UUID
 
@@ -53,18 +53,30 @@ class IReportService(ABC):
         """
 
     @abstractmethod
-    async def add_report(self, report: ReportIn) -> ReportDTO | None:
+    async def get_by_id(self, report_id: int) -> Report | None:
+        """Get a report by its ID.
+
+        Args:
+            report_id (int): The ID of the report
+
+        Returns:
+            Report | None: The report if found
+        """
+
+    @abstractmethod
+    async def add_report(self, report: ReportIn, reporter_id: UUID) -> ReportDTO | None:
         """Add a new report.
 
         Args:
             report (ReportIn): The report to add
+            reporter_id (UUID): ID of the user creating the report
 
         Returns:
             ReportDTO | None: The newly created report
         """
 
     @abstractmethod
-    async def update_status(
+    async def update_report_status(
         self,
         report_id: int,
         status: ReportStatus,

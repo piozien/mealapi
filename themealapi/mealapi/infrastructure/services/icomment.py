@@ -7,6 +7,7 @@ from uuid import UUID
 from mealapi.core.domain.comment import Comment, CommentIn
 from mealapi.infrastructure.dto.commentdto import CommentDTO
 
+
 class ICommentService(ABC):
     """An abstract class representing protocol of comment service."""
 
@@ -43,16 +44,16 @@ class ICommentService(ABC):
         """
 
     @abstractmethod
-    async def add_comment(self, comment: CommentIn) -> CommentDTO | None:
+    async def add_comment(self, comment: CommentIn, author: UUID) -> CommentDTO | None:
         """Add a new comment.
 
         Args:
             comment (CommentIn): The comment to add
+            author (UUID): The ID of the user creating the comment
 
         Returns:
             CommentDTO | None: The newly created comment
         """
-        
 
     @abstractmethod
     async def update_comment(self, comment_id: int, comment: CommentIn) -> Comment | None:

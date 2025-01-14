@@ -1,172 +1,140 @@
-"""Module containing recipe repository abstractions.
-
-This module defines the interface for recipe repositories, specifying
-the contract that any recipe repository implementation must fulfill.
-The interface provides methods for managing recipes in the data storage,
-including CRUD operations and various query methods.
-"""
+"""Module containing recipe repository abstractions."""
 
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List
 from uuid import UUID
 
-from mealapi.core.domain.recipe import Recipe, RecipeIn
+from mealapi.core.domain.recipe import Recipe
 
 
 class IRecipeRepository(ABC):
-    """Abstract base class defining the recipe repository interface.
-    
-    This interface defines all operations that must be supported by
-    any concrete recipe repository implementation. It provides methods
-    for retrieving, creating, updating, and deleting recipes, as well
-    as various query methods for searching and filtering recipes.
-    """
+    """An abstract class representing protocol of recipe repository."""
 
     @abstractmethod
     async def get_all_recipes(self) -> Iterable[Any]:
-        """Retrieve all recipes from the data storage.
+        """The abstract getting all recipes from the data storage.
 
         Returns:
-            Iterable[Any]: Collection of all recipes in the system
-
-        Note:
-            The returned recipes should include basic metadata but may
-            not include full details like comments and ratings for
-            performance reasons.
+            Iterable[Any]: All recipes in the data storage.
         """
 
     @abstractmethod
     async def get_by_id(self, recipe_id: int) -> Any | None:
-        """Retrieve a recipe by its ID.
+        """The abstract getting a recipe from the data storage by id.
 
         Args:
-            recipe_id (int): ID of the recipe to retrieve
+            recipe_id (int): The id of the recipe.
 
         Returns:
-            Any | None: The recipe data if found, None otherwise
-
-        Note:
-            The returned recipe should include all related data including
-            comments, ratings, and author information.
+            Any | None: The recipe data if exists.
         """
 
     @abstractmethod
     async def get_by_name(self, recipe_name: str) -> Any | None:
-        """Retrieve a recipe by its name.
+        """The abstract getting a recipe from the data storage by name.
 
         Args:
-            recipe_name (str): Name of the recipe to retrieve
+            recipe_name (str): The name of the recipe.
 
         Returns:
-            Any | None: The recipe data if found, None otherwise
-
-        Note:
-            The search should be case-insensitive and may include
-            partial matches based on implementation.
+            Any | None: The recipe data if exists.
         """
 
     @abstractmethod
     async def get_by_preparation_time(self, preparation_time: int) -> Iterable[Any]:
-        """Retrieve recipes by preparation time.
+        """The abstract getting recipes from the data storage by preparation time.
 
         Args:
-            preparation_time (int): Maximum preparation time in minutes
+            preparation_time (int): The preparation time of the recipes.
 
         Returns:
-            Iterable[Any]: Collection of recipes within the time limit
+            Iterable[Any]: The recipes with the given preparation time.
+        """
 
-        Note:
-            Returns recipes that can be prepared in less than or equal
-            to the specified time.
+    @abstractmethod
+    async def get_by_average_rating(self, average_rating: float) -> Iterable[Any]:
+        """The abstract getting recipes from the data storage by average rating.
+
+        Args:
+            average_rating (float): The average rating of the recipes.
+
+        Returns:
+            Iterable[Any]: The recipes with the given average rating.
+        """
+
+    @abstractmethod
+    async def get_by_ingredients(self, ingredients: List[str], min_match_percentage: float) -> Iterable[Any]:
+        """Get recipes that can be made with the given ingredients.
+
+        Args:
+            ingredients (List[str]): List of ingredients the user has
+            min_match_percentage (float): Minimum percentage of recipe ingredients that must be available (0.0 to 1.0)
+
+        Returns:
+            Iterable[Any]: Recipes that can be made with the given ingredients, sorted by match percentage
+        """
+
+    @abstractmethod
+    async def get_by_user(self, user_id: UUID) -> Iterable[Any]:
+        """Get all recipes created by a specific user.
+
+        Args:
+            user_id (UUID): The ID of the user whose recipes we want to retrieve
+
+        Returns:
+            Iterable[Any]: All recipes created by the specified user
         """
 
     @abstractmethod
     async def get_by_category(self, category: str) -> Iterable[Any]:
-        """Retrieve recipes by category.
+        """Get recipes by category.
 
         Args:
-            category (str): Category to filter by
+            category (str): The category to filter by
 
         Returns:
-            Iterable[Any]: Collection of recipes in the category
-
-        Note:
-            Categories should be standardized and case-insensitive.
+            Iterable[Any]: All recipes in the specified category
         """
 
     @abstractmethod
-    async def get_by_author(self, author_id: UUID) -> Iterable[Any]:
-        """Retrieve recipes by author.
+    async def get_by_tag(self, tag: str) -> Iterable[Any]:
+        """Get recipes by tag.
 
         Args:
-            author_id (UUID): ID of the recipe author
+            tag (str): The tag to filter by
 
         Returns:
-            Iterable[Any]: Collection of recipes by the author
-
-        Note:
-            Results should be ordered by creation date, with the
-            most recent recipes first.
+            Iterable[Any]: All recipes with the specified tag
         """
 
     @abstractmethod
-    async def add_recipe(self, recipe: RecipeIn) -> Any:
-        """Create a new recipe.
+    async def add_recipe(self, recipe: Recipe, author: UUID) -> Any | None:
+        """The abstract adding a new recipe to the data storage.
 
         Args:
-            recipe (RecipeIn): Recipe data to create
+            recipe (Recipe): The attributes of the recipe.
+            author (UUID): The author of the recipe.
 
         Returns:
-            Any: The created recipe with generated ID and metadata
-
-        Note:
-            The method should handle setting the creation timestamp
-            and validating all required fields.
+            Any | None: The newly created recipe.
         """
 
     @abstractmethod
-    async def update_recipe(self, recipe_id: int, recipe: RecipeIn) -> Any:
-        """Update an existing recipe.
+    async def update_recipe(self, recipe_id: int, recipe: Recipe) -> Any | None:
+        """The abstract updating recipe data in the data storage.
 
         Args:
-            recipe_id (int): ID of the recipe to update
-            recipe (RecipeIn): New recipe data
+            recipe_id (int): The id of the recipe.
+            recipe (Recipe): The attributes of the recipe.
 
         Returns:
-            Any: The updated recipe data
-
-        Note:
-            Only the recipe content and metadata should be updatable.
-            Author and creation date should remain unchanged.
+            Any | None: The updated recipe.
         """
 
     @abstractmethod
     async def delete_recipe(self, recipe_id: int) -> bool:
-        """Delete a recipe.
+        """The abstract updating removing recipe from the data storage.
 
         Args:
-            recipe_id (int): ID of the recipe to delete
-
-        Returns:
-            bool: True if recipe was deleted, False if not found
-
-        Note:
-            This operation should also handle cleanup of all related
-            data such as comments, ratings, and reports.
-        """
-
-    @abstractmethod
-    async def search_recipes(self, query: str) -> Iterable[Any]:
-        """Search recipes by query string.
-
-        Args:
-            query (str): Search query string
-
-        Returns:
-            Iterable[Any]: Collection of matching recipes
-
-        Note:
-            The search should look for matches in recipe names,
-            descriptions, ingredients, and other relevant fields.
-            Results should be ordered by relevance.
+            recipe_id (int): The id of the recipe.
         """

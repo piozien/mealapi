@@ -1,8 +1,5 @@
-"""Module containing user-related domain models.
+"""A model containing user-related models."""
 
-This module defines the core data models for user management in the application.
-It includes user roles and authentication-related models.
-"""
 
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
@@ -10,37 +7,20 @@ from uuid import UUID
 
 
 class UserRole(str, Enum):
-    """User role types for access control.
-    
-    Values:
-        ADMIN: Administrator with full access to all features
-        USER: Regular user with standard permissions
-    """
+    """Enum representing possible user roles"""
     ADMIN = "ADMIN"
     USER = "USER"
 
 
 class UserIn(BaseModel):
-    """Model for user registration and authentication.
-    
-    Attributes:
-        email (str): User's email address (used as username)
-        password (str): User's password (should be hashed before storage)
-        role (UserRole): User's role in the system (defaults to USER)
-    """
+    """An input user model."""
     email: str
     password: str
-    role: UserRole = UserRole.USER
+    role: UserRole = UserRole.USER  # default user
 
 
 class User(UserIn):
-    """Model representing a complete user in the database.
-    
-    Extends UserIn to include additional fields for user identification.
-    
-    Attributes:
-        id (UUID): Unique identifier of the user
-    """
+    """The user model class."""
     id: UUID
 
     model_config = ConfigDict(from_attributes=True, extra="ignore")

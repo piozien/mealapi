@@ -103,10 +103,10 @@ recipe_table = sqlalchemy.Table(
     sqlalchemy.Column("servings", sqlalchemy.Integer),
     sqlalchemy.Column("difficulty", sqlalchemy.String),
     sqlalchemy.Column("average_rating", sqlalchemy.Float, default=0.0, index=True),
+    sqlalchemy.Column("ai_detected", sqlalchemy.Float, default=0.0),
     sqlalchemy.Column("ingredients", MutableList.as_mutable(sqlalchemy.ARRAY(sqlalchemy.String))),
     sqlalchemy.Column("steps", MutableList.as_mutable(sqlalchemy.ARRAY(sqlalchemy.String))),
-    sqlalchemy.Column("tags", MutableList.as_mutable(sqlalchemy.ARRAY(sqlalchemy.String)), default=[]),
-    sqlalchemy.Column("ai_detected", sqlalchemy.Float, nullable=True)
+    sqlalchemy.Column("tags", MutableList.as_mutable(sqlalchemy.ARRAY(sqlalchemy.String)), default=[])
 )
 db_uri = (
     f"postgresql+asyncpg://{config.DB_USER}:{config.DB_PASSWORD}"
