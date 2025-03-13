@@ -1,4 +1,4 @@
-# MealAPI
+# MealAPI - UWM project
 
 A recipe management API built with modern Python technologies.
 
